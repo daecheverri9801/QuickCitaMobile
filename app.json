@@ -33,6 +33,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "La aplicación necesita acceso al calendario para agendar tus citas médicas."
+        }
       ]
     ],
     "experiments": {
