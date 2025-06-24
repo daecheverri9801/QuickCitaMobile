@@ -11,7 +11,6 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../services/authService";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -33,9 +32,6 @@ export default function LoginScreen() {
     try {
       const userData = await loginUser(credentials);
 
-      // Guarda el usuario y token en AsyncStorage
-      await AsyncStorage.setItem("user", JSON.stringify(userData));
-
       // Redirección según rol
       if (userData.rol === "administrador") {
         router.replace("/admin");
@@ -52,88 +48,89 @@ export default function LoginScreen() {
   };
 
   return (
-  <KeyboardAvoidingView
-    style={{ flex: 1, backgroundColor: "#f8f9fa" }}
-    behavior={Platform.OS === "ios" ? "padding" : undefined}
-  >
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="medkit" size={48} color="#0d6efd" />
-        <Text style={styles.title}>Bienvenido de vuelta</Text>
-        <Text style={styles.subtitle}>
-          Inicia sesión en tu cuenta de QuickCita
-        </Text>
-      </View>
-
-      {error ? (
-        <View style={styles.alert}>
-          <Text style={styles.alertText}>{error}</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "#f8f9fa" }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Ionicons name="medkit" size={48} color="#0d6efd" />
+          <Text style={styles.title}>Bienvenido de vuelta</Text>
+          <Text style={styles.subtitle}>
+            Inicia sesión en tu cuenta de QuickCita
+          </Text>
         </View>
-      ) : null}
 
-      <View style={styles.form}>
-        <Text style={styles.label}>Correo electrónico</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ingresa tu email"
-          value={credentials.email}
-          onChangeText={(value) => handleChange("email", value)}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          editable={!loading}
-        />
+        {error ? (
+          <View style={styles.alert}>
+            <Text style={styles.alertText}>{error}</Text>
+          </View>
+        ) : null}
 
-        <Text style={styles.label}>Contraseña</Text>
-        <View style={styles.passwordContainer}>
+        <View style={styles.form}>
+          <Text style={styles.label}>Correo electrónico</Text>
           <TextInput
-            style={styles.passwordInput}
-            placeholder="Ingresa tu contraseña"
-            value={credentials.password}
-            onChangeText={(value) => handleChange("password", value)}
-            secureTextEntry={!showPassword}
+            style={styles.input}
+            placeholder="Ingresa tu email"
+            value={credentials.email}
+            onChangeText={(value) => handleChange("email", value)}
+            keyboardType="email-address"
+            autoCapitalize="none"
             editable={!loading}
           />
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
-          >
-            <Ionicons
-              name={showPassword ? "eye-off" : "eye"}
-              size={20}
-              color="#6c757d"
+
+          <Text style={styles.label}>Contraseña</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Ingresa tu contraseña"
+              value={credentials.password}
+              onChangeText={(value) => handleChange("password", value)}
+              secureTextEntry={!showPassword}
+              editable={!loading}
             />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={20}
+                color="#6c757d"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.submitButton, loading && styles.disabledButton]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitButtonText}>Iniciar Sesión</Text>
+            )}
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={[styles.submitButton, loading && styles.disabledButton]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitButtonText}>Iniciar Sesión</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>¿No tienes una cuenta? </Text>
+          <TouchableOpacity onPress={() => router.push("/register")}>
+            <Text style={styles.footerLink}>Regístrate aquí</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>¿No tienes una cuenta? </Text>
-        <TouchableOpacity onPress={() => router.push("/register")}>
-          <Text style={styles.footerLink}>Regístrate aquí</Text>
-        </TouchableOpacity>
+        <View style={styles.extraInfo}>
+          <Text style={styles.extraText}>
+            ¿Olvidaste tu contraseña?{" "}
+            <Text style={styles.footerLink}>Recuperar aquí</Text>
+          </Text>
+        </View>
       </View>
-
-      <View style={styles.extraInfo}>
-        <Text style={styles.extraText}>
-          ¿Olvidaste tu contraseña?{" "}
-          <Text style={styles.footerLink}>Recuperar aquí</Text>
-        </Text>
-      </View>
-    </View>
-  </KeyboardAvoidingView>
-)};
+    </KeyboardAvoidingView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 24 },

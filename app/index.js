@@ -4,9 +4,13 @@ import { View, Text, Button, StyleSheet, Image } from "react-native";
 export default function HomeScreen() {
   const router = useRouter();
 
+
   return (
     <View style={styles.container}>
-      <Image source={require("../assets/images/Logo.png")} style={styles.logo} />
+      <Image
+        source={require("../assets/images/Logo.png")}
+        style={styles.logo}
+      />
       <Text style={styles.title}>Bienvenido a QuickCita</Text>
       <Text style={styles.subtitle}>
         Tu Salud, Tu Tiempo, Tu Cita en un clic

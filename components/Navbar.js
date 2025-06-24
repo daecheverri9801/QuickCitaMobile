@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import {
-  Ionicons,
   FontAwesome5,
+  Ionicons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useRouter, usePathname } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { usePathname, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 // Devuelve las tabs según el rol
 function getRoleTabs(role) {
@@ -87,30 +87,7 @@ function getRoleTabs(role) {
         },
       ];
     default:
-      return [
-        {
-          route: "/login",
-          label: "Iniciar Sesión",
-          icon: (focused) => (
-            <Ionicons
-              name="log-in-outline"
-              size={22}
-              color={focused ? "#198754" : "#6c757d"}
-            />
-          ),
-        },
-        {
-          route: "/register",
-          label: "Registrarse",
-          icon: (focused) => (
-            <Ionicons
-              name="person-add-outline"
-              size={22}
-              color={focused ? "#198754" : "#6c757d"}
-            />
-          ),
-        },
-      ];
+      return [];
   }
 }
 
@@ -137,26 +114,55 @@ export default function MobileNavbar() {
 
   return (
     <View style={styles.navbar}>
-      {tabs.map((tab) => {
-        const focused = pathname.startsWith(tab.route);
-        return (
-          <TouchableOpacity
-            key={tab.route}
-            style={styles.tab}
-            onPress={() => router.replace(tab.route)}
-          >
-            {tab.icon(focused)}
-            <Text style={[styles.label, focused && styles.labelActive]}>
-              {tab.label}
+      {user ? (
+        <>
+          {/* Nombre de usuario */}
+          <View style={styles.userSection}>
+            <Ionicons name="person-circle" size={20} color="#198754" />
+            <Text style={styles.userText}>
+              {user.nombre || user.email || "Usuario"}
             </Text>
+          </View>
+          {/* Tabs según rol */}
+          {tabs.map((tab) => {
+            const focused = pathname.startsWith(tab.route);
+            return (
+              <TouchableOpacity
+                key={tab.route}
+                style={styles.tab}
+                onPress={() => router.replace(tab.route)}
+              >
+                {tab.icon(focused)}
+                <Text style={[styles.label, focused && styles.labelActive]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          {/* Botón salir */}
+          <TouchableOpacity style={styles.tab} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={22} color="#dc3545" />
+            <Text style={[styles.label, { color: "#dc3545" }]}>Salir</Text>
           </TouchableOpacity>
-        );
-      })}
-      {user && (
-        <TouchableOpacity style={styles.tab} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color="#dc3545" />
-          <Text style={[styles.label, { color: "#dc3545" }]}>Salir</Text>
-        </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          {/* Solo mostrar cuando NO hay usuario */}
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => router.replace("/login")}
+          >
+            <Ionicons name="log-in-outline" size={22} color="#198754" />
+            <Text style={styles.label}>Iniciar Sesión</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => router.replace("/register")}
+          >
+            <Ionicons name="person-add-outline" size={22} color="#198754" />
+            <Text style={styles.label}>Registrarse</Text>
+          </TouchableOpacity>
+        </>
       )}
     </View>
   );
@@ -178,11 +184,23 @@ const styles = StyleSheet.create({
     zIndex: 100,
     elevation: 10,
   },
+  userSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  userText: {
+    marginLeft: 4,
+    fontSize: 13,
+    color: "#198754",
+    fontWeight: "bold",
+    maxWidth: 90,
+  },
   tab: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 6,
+    marginHorizontal: 8,
   },
   label: {
     fontSize: 12,

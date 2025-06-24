@@ -62,7 +62,11 @@ export default function DashboardScreen() {
   // Cargar usuario autenticado
   useEffect(() => {
     AsyncStorage.getItem("user").then((data) => {
-      if (data) setUser(JSON.parse(data));
+      console.log("Contenido de AsyncStorage (user):", data);
+      if (data) {
+        const usuario = JSON.parse(data);
+        setUser(usuario);
+      }
     });
   }, []);
 
@@ -161,6 +165,13 @@ que deseas agendar una cita con Dr(a). ${
   };
 
   const confirmAppointment = async () => {
+    console.log("Datos enviados para agendar cita:", {
+      id_paciente: user.id_usuario,
+      id_medico: selectedDoctor.id_usuario,
+      fecha_hora: fechaHora,
+      metodo_notificacion: notiMethod,
+      seguro_medico: selectedDoctor.PerfilMedico?.seguro_medico || "",
+    });
     try {
       await createAppointment({
         id_paciente: user.id_usuario,
@@ -195,7 +206,7 @@ que deseas agendar una cita con Dr(a). ${
   };
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ padding: 20 }}
@@ -224,11 +235,11 @@ que deseas agendar una cita con Dr(a). ${
             style={styles.picker}
           >
             <Picker.Item label="-- Especialidad --" value="" />
-
             {especialidades.map((sp) => (
               <Picker.Item key={sp} label={sp} value={sp} />
             ))}
           </Picker>
+
           <Picker
             selectedValue={filters.ubicacion}
             onValueChange={(value) => handleFilterChange("ubicacion", value)}
@@ -239,6 +250,7 @@ que deseas agendar una cita con Dr(a). ${
               <Picker.Item key={loc} label={loc} value={loc} />
             ))}
           </Picker>
+
           <Picker
             selectedValue={filters.seguro_medico}
             onValueChange={(value) =>
@@ -251,6 +263,7 @@ que deseas agendar una cita con Dr(a). ${
               <Picker.Item key={sg} label={sg} value={sg} />
             ))}
           </Picker>
+
           <TouchableOpacity
             style={styles.searchButton}
             onPress={handleSearch}
@@ -276,6 +289,7 @@ que deseas agendar una cita con Dr(a). ${
                 <Text style={{ fontWeight: "bold" }}>Ubicación:</Text>{" "}
                 {doc.PerfilMedico?.ubicacion || "N/A"}
               </Text>
+
               <View style={styles.slotsContainer}>
                 {slotsByDoctor[doc.id_usuario]?.length > 0 ? (
                   slotsByDoctor[doc.id_usuario].map((slot) => (
@@ -348,7 +362,7 @@ que deseas agendar una cita con Dr(a). ${
         </Modal>
       </ScrollView>
       <MobileNavbar />
-    </>
+    </View>
   );
 }
 
