@@ -33,7 +33,7 @@ export async function loginUser(data) {
         console.log("Perfil guardado en AsyncStorage:", perfil);
       } catch (error) {
         console.error("Error al obtener perfil:", error);
-      }
+      } 
     }
   }
   return res.data;

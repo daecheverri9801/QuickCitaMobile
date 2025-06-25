@@ -31,12 +31,12 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const userData = await loginUser(credentials);
-
+      console.log("Usuario logueado:", userData);
       // Redirección según rol
       if (userData.rol === "administrador") {
         router.replace("/admin");
       } else if (userData.rol === "medico") {
-        router.replace("/medico");
+        router.replace("/medico/validar");
       } else {
         router.replace("/dashboard");
       }
