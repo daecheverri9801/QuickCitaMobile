@@ -64,7 +64,7 @@ function getRoleTabs(role) {
     case "administrador":
       return [
         {
-          route: "/admin/medicos",
+          route: "/admin/ApproveDoctors",
           label: "Aprobar Médicos",
           icon: (focused) => (
             <FontAwesome5
@@ -75,7 +75,7 @@ function getRoleTabs(role) {
           ),
         },
         {
-          route: "/admin/configurar",
+          route: "/admin/ConfigureRoles",
           label: "Configurar Roles",
           icon: (focused) => (
             <FontAwesome5

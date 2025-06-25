@@ -13,8 +13,10 @@ import {
 import { useRouter } from "expo-router";
 import { loginUser } from "../services/authService";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
+  const navigation = useNavigation();
   const router = useRouter();
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -34,7 +36,7 @@ export default function LoginScreen() {
       console.log("Usuario logueado:", userData);
       // Redirección según rol
       if (userData.rol === "administrador") {
-        router.replace("/admin");
+        router.replace("/admin/ApproveDoctors");
       } else if (userData.rol === "medico") {
         router.replace("/medico/validar");
       } else {

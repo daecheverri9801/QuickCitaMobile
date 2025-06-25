@@ -23,18 +23,36 @@ export async function loginUser(data) {
     const decoded = jwtDecode(res.data.token);
     const id_usuario = decoded.id_usuario;
 
+    //     if (id_usuario) {
+    //       try {
+    //         const perfilRes = await api.get(`/usuarios/profile/${id_usuario}`, {
+    //           headers: { Authorization: `Bearer ${res.data.token}` },
+    //         });
+    //         const perfil = perfilRes.data;
+    //         await AsyncStorage.setItem("user", JSON.stringify(perfil));
+    //         console.log("Perfil guardado en AsyncStorage:", perfil);
+    //       } catch (error) {
+    //         console.error("Error al obtener perfil:", error);
+    //       }
+    //     }
+    //   }
+    //   return res.data;
+    // }
+
     if (id_usuario) {
-      try {
-        const perfilRes = await api.get(`/usuarios/profile/${id_usuario}`, {
-          headers: { Authorization: `Bearer ${res.data.token}` },
-        });
-        const perfil = perfilRes.data;
-        await AsyncStorage.setItem("user", JSON.stringify(perfil));
-        console.log("Perfil guardado en AsyncStorage:", perfil);
-      } catch (error) {
-        console.error("Error al obtener perfil:", error);
-      } 
+      // Obtener perfil completo del usuario
+      const perfilRes = await api.get(`/usuarios/profile/${id_usuario}`, {
+        headers: { Authorization: `Bearer ${res.data.token}` },
+      });
+      const perfil = perfilRes.data;
+
+      // Guardar perfil en AsyncStorage
+      await AsyncStorage.setItem("user", JSON.stringify(perfil));
+
+      // Retornar perfil completo con rol
+      return perfil;
     }
   }
-  return res.data;
+
+  throw new Error("Error en login");
 }
