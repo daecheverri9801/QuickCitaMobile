@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Modal,
   ActivityIndicator,
-  Alert,
   TextInput,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
@@ -20,6 +19,8 @@ import {
 } from "../services/appointmentService";
 import { getPerfilFilters } from "../services/filterService";
 import MobileNavbar from "../components/Navbar";
+import CustomAlert from "../components/CustomAlert";
+import CustomModal from "../components/CustomModal";
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -52,17 +53,24 @@ export default function DashboardScreen() {
   const [fechaHora, setFechaHora] = useState("");
   const [notiMethod, setNotiMethod] = useState("email");
 
-  // Alertas
+  // Alertas personalizadas
   const [alert, setAlert] = useState({
     show: false,
     message: "",
     type: "info",
   });
 
+  // Modal personalizado para confirmación de cita
+  const [confirmModal, setConfirmModal] = useState({
+    show: false,
+    title: "",
+    body: "",
+    onConfirm: null,
+  });
+
   // Cargar usuario autenticado
   useEffect(() => {
     AsyncStorage.getItem("user").then((data) => {
-      console.log("Contenido de AsyncStorage (user):", data);
       if (data) {
         const usuario = JSON.parse(data);
         setUser(usuario);
@@ -78,7 +86,7 @@ export default function DashboardScreen() {
         setUbicaciones(Array.isArray(ubi) ? ubi : []);
         setSeguros(Array.isArray(seg) ? seg : []);
       })
-      .catch((err) => {
+      .catch(() => {
         setAlert({
           show: true,
           message: "Error al cargar los filtros de búsqueda",
@@ -141,7 +149,8 @@ export default function DashboardScreen() {
     setShowModal(true);
   };
 
-  const handleAppointment = async () => {
+  // Mostrar modal personalizado para confirmar cita
+  const handleAppointment = () => {
     if (!fechaHora) {
       setAlert({
         show: true,
@@ -151,27 +160,18 @@ export default function DashboardScreen() {
       return;
     }
 
-    Alert.alert(
-      "Confirmar cita médica",
-      `¿Estás seguro de 
-que deseas agendar una cita con Dr(a). ${
+    setConfirmModal({
+      show: true,
+      title: "Confirmar cita médica",
+      body: `¿Estás seguro de que deseas agendar una cita con Dr(a). ${
         selectedDoctor?.nombre
       } para el ${new Date(fechaHora).toLocaleString()}?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Confirmar", onPress: () => confirmAppointment() },
-      ]
-    );
+      onConfirm: confirmAppointment,
+    });
   };
 
   const confirmAppointment = async () => {
-    console.log("Datos enviados para agendar cita:", {
-      id_paciente: user.id_usuario,
-      id_medico: selectedDoctor.id_usuario,
-      fecha_hora: fechaHora,
-      metodo_notificacion: notiMethod,
-      seguro_medico: selectedDoctor.PerfilMedico?.seguro_medico || "",
-    });
+    setConfirmModal({ show: false, title: "", body: "", onConfirm: null });
     try {
       await createAppointment({
         id_paciente: user.id_usuario,
@@ -205,6 +205,10 @@ que deseas agendar una cita con Dr(a). ${
     }
   };
 
+  const handleConfirmModalCancel = () => {
+    setConfirmModal({ show: false, title: "", body: "", onConfirm: null });
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
@@ -213,19 +217,13 @@ que deseas agendar una cita con Dr(a). ${
       >
         <Text style={styles.header}>Buscar médicos y agendar cita</Text>
 
-        {/* Alertas */}
-        {alert.show && (
-          <View
-            style={[
-              styles.alert,
-              alert.type === "success" && styles.alertSuccess,
-              alert.type === "danger" && styles.alertDanger,
-              alert.type === "warning" && styles.alertWarning,
-            ]}
-          >
-            <Text style={styles.alertText}>{alert.message}</Text>
-          </View>
-        )}
+        {/* Alertas personalizadas */}
+        <CustomAlert
+          show={alert.show}
+          message={alert.message}
+          variant={alert.type}
+          onClose={() => setAlert({ show: false, message: "", type: "info" })}
+        />
 
         {/* Filtros */}
         <View style={styles.filters}>
@@ -360,6 +358,15 @@ que deseas agendar una cita con Dr(a). ${
             </View>
           </View>
         </Modal>
+
+        {/* Modal personalizado para confirmación */}
+        <CustomModal
+          show={confirmModal.show}
+          title={confirmModal.title}
+          body={confirmModal.body}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={handleConfirmModalCancel}
+        />
       </ScrollView>
       <MobileNavbar />
     </View>
