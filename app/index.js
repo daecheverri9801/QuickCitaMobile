@@ -4,7 +4,7 @@ import { View, Text, Button, StyleSheet, Image } from "react-native";
 export default function HomeScreen() {
   const router = useRouter();
 
-
+  // Esta pantalla de inicio muestra el logo, título y botones para iniciar sesión o registrarse
   return (
     <View style={styles.container}>
       <Image

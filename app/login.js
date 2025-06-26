@@ -23,11 +23,13 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Maneja el cambio de los campos de entrada
   const handleChange = (name, value) => {
     setCredentials((prev) => ({ ...prev, [name]: value }));
     setError("");
   };
 
+  // Maneja el envío del formulario
   const handleSubmit = async () => {
     setError("");
     setLoading(true);

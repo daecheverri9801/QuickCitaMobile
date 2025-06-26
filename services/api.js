@@ -5,7 +5,7 @@ const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.24:4000/api", 
 });
 
-// Cambio 2: AsyncStorage en lugar de localStorage
+// Interceptor para agregar el token de autorización a las solicitudes
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("token");
   if (token) {

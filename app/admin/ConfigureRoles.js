@@ -34,6 +34,7 @@ export default function ConfigureRolesScreen() {
     fetchUsers();
   }, []);
 
+  // obtener usuarios desde la API
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -53,6 +54,7 @@ export default function ConfigureRolesScreen() {
     );
   };
 
+  // Cambiar el rol del usuario
   const changeRole = async (id, rol) => {
     try {
       await api.put(`/admin/usuarios/${id}/rol`, { rol });
@@ -63,6 +65,7 @@ export default function ConfigureRolesScreen() {
     }
   };
 
+  // Eliminar usuario
   const deleteUser = async (id) => {
     try {
       await api.delete(`/admin/usuarios/${id}`);
@@ -73,11 +76,13 @@ export default function ConfigureRolesScreen() {
     }
   };
 
+  // Confirmar eliminación de usuario
   const confirmDelete = (user) => {
     setModalUser(user);
     setModalVisible(true);
   };
 
+  // Manejar confirmación de eliminación
   const handleDeleteConfirm = () => {
     if (modalUser) {
       deleteUser(modalUser.id_usuario);
@@ -86,6 +91,7 @@ export default function ConfigureRolesScreen() {
     }
   };
 
+  // Obtener color del rol
   const getRoleColor = (rol) => {
     switch (rol) {
       case "administrador":
@@ -99,6 +105,7 @@ export default function ConfigureRolesScreen() {
     }
   };
 
+  // Renderizar cada usuario
   const renderItem = ({ item }) => (
     <View style={styles.userItem}>
       <View style={{ flex: 1 }}>

@@ -119,6 +119,7 @@ export default function ValidarPerfilScreen() {
     });
   };
 
+  // Función para guardar el perfil médico
   const saveProfile = async () => {
     setSaving(true);
     try {

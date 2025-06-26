@@ -12,6 +12,7 @@ import CalendarioScreen from "./app/medico/calendario";
 
 const Stack = createNativeStackNavigator();
 
+// Componente principal de la aplicación que define las rutas y pantallas
 export default function App() {
   return (
     <NavigationContainer>

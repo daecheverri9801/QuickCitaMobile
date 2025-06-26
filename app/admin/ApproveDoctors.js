@@ -22,6 +22,7 @@ export default function ApproveDoctorsScreen() {
     fetch();
   }, []);
 
+  // Función para obtener la lista de médicos pendientes
   const fetch = async () => {
     setLoading(true);
     try {
@@ -33,6 +34,7 @@ export default function ApproveDoctorsScreen() {
     setLoading(false);
   };
 
+  // Función para manejar la aprobación o rechazo de médicos
   const handle = async (id_perfil, action) => {
     try {
       if (action === "aprobar") {
@@ -50,6 +52,7 @@ export default function ApproveDoctorsScreen() {
     setTimeout(() => setMsg(""), 3000);
   };
 
+  // Renderiza cada elemento de la lista
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <View style={styles.infoContainer}>

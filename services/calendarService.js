@@ -1,6 +1,7 @@
 import * as Calendar from 'expo-calendar';
 import { Platform } from 'react-native';
 
+// Solicita permisos para acceder al calendario
 export async function requestCalendarPermissions() {
   const { status } = await Calendar.requestCalendarPermissionsAsync();
   if (status !== 'granted') {
@@ -9,6 +10,7 @@ export async function requestCalendarPermissions() {
   return true;
 }
 
+// Obtiene el calendario por defecto del dispositivo
 export async function getDefaultCalendar() {
   const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
   
@@ -62,6 +64,7 @@ addAppointmentToCalendar({
   }
 }
 
+// Actualiza un evento del calendario
 export async function updateCalendarEvent(eventId, updates) {
   try {
     await Calendar.updateEventAsync(eventId, updates);
@@ -72,6 +75,7 @@ export async function updateCalendarEvent(eventId, updates) {
   }
 }
 
+// Elimina un evento del calendario
 export async function deleteCalendarEvent(eventId) {
   try {
     await Calendar.deleteEventAsync(eventId);

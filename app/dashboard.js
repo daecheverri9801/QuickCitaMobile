@@ -95,10 +95,12 @@ export default function DashboardScreen() {
       });
   }, []);
 
+  // Manejar cambios en los filtros
   const handleFilterChange = (name, value) => {
     setFilters((f) => ({ ...f, [name]: value }));
   };
 
+  // Manejar búsqueda de médicos
   const handleSearch = async () => {
     setLoading(true);
     setDoctors([]);
@@ -170,6 +172,7 @@ export default function DashboardScreen() {
     });
   };
 
+  // Confirmar agendamiento de cita
   const confirmAppointment = async () => {
     setConfirmModal({ show: false, title: "", body: "", onConfirm: null });
     try {
@@ -205,6 +208,7 @@ export default function DashboardScreen() {
     }
   };
 
+  // Manejar cancelación del modal de confirmación
   const handleConfirmModalCancel = () => {
     setConfirmModal({ show: false, title: "", body: "", onConfirm: null });
   };

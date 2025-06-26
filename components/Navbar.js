@@ -96,6 +96,7 @@ export default function MobileNavbar() {
   const pathname = usePathname();
   const [user, setUser] = useState(null);
 
+  // Cargar usuario desde AsyncStorage al iniciar
   useEffect(() => {
     AsyncStorage.getItem("user").then((data) => {
       if (data) setUser(JSON.parse(data));
@@ -106,6 +107,7 @@ export default function MobileNavbar() {
   const role = user?.rol;
   const tabs = getRoleTabs(role);
 
+  // Maneja el cierre de sesión
   const handleLogout = async () => {
     await AsyncStorage.removeItem("user");
     setUser(null);
