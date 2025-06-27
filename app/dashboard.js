@@ -12,6 +12,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import socket, { connectSocket, disconnectSocket } from "../mobileSocket"; // Importa cliente de socket
 import { searchDoctors } from "../services/doctorService";
 import {
   createAppointment,
@@ -54,13 +55,9 @@ export default function DashboardScreen() {
   const [notiMethod, setNotiMethod] = useState("email");
 
   // Alertas personalizadas
-  const [alert, setAlert] = useState({
-    show: false,
-    message: "",
-    type: "info",
-  });
+  const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
 
-  // Modal personalizado para confirmación de cita
+  // Modal personalizado para confirmación
   const [confirmModal, setConfirmModal] = useState({
     show: false,
     title: "",
@@ -68,17 +65,39 @@ export default function DashboardScreen() {
     onConfirm: null,
   });
 
-  // Cargar usuario autenticado
+  // Cargar usuario y conectar socket
   useEffect(() => {
     AsyncStorage.getItem("user").then((data) => {
       if (data) {
         const usuario = JSON.parse(data);
         setUser(usuario);
+        // Conectar socket
+        connectSocket();
       }
     });
+    return () => {
+      // Desconectar socket al salir
+      disconnectSocket();
+    };
   }, []);
 
-  // Cargar valores de filtros desde el backend
+  // Escuchar evento de cita creada
+  useEffect(() => {
+    if (!user) return;
+    const room = `user_${user.id_usuario}`;
+    socket.on("appointmentCreated", ({ fecha_hora, medico }) => {
+      setAlert({
+        show: true,
+        message: `📅 Cita con Dr(a). ${medico} para ${fecha_hora} creada exitosamente.`,
+        type: "success",
+      });
+    });
+    return () => {
+      socket.off("appointmentCreated");
+    };
+  }, [user]);
+
+  // Cargar filtros
   useEffect(() => {
     getPerfilFilters()
       .then(({ especialidades: esp, ubicaciones: ubi, seguros: seg }) => {
@@ -87,20 +106,14 @@ export default function DashboardScreen() {
         setSeguros(Array.isArray(seg) ? seg : []);
       })
       .catch(() => {
-        setAlert({
-          show: true,
-          message: "Error al cargar los filtros de búsqueda",
-          type: "danger",
-        });
+        setAlert({ show: true, message: "Error al cargar filtros", type: "danger" });
       });
   }, []);
 
-  // Manejar cambios en los filtros
   const handleFilterChange = (name, value) => {
     setFilters((f) => ({ ...f, [name]: value }));
   };
 
-  // Manejar búsqueda de médicos
   const handleSearch = async () => {
     setLoading(true);
     setDoctors([]);
@@ -108,38 +121,21 @@ export default function DashboardScreen() {
     try {
       const docs = await searchDoctors(filters);
       setDoctors(Array.isArray(docs) ? docs : []);
-
       if (!docs || docs.length === 0) {
-        setAlert({
-          show: true,
-          message: "No se encontraron médicos con los filtros seleccionados",
-          type: "warning",
-        });
-
-        setSlotsByDoctor({});
+        setAlert({ show: true, message: "No se encontraron médicos", type: "warning" });
         return;
       }
-
-      // cargar slots para cada doctor
-      const slotsMap = {};
+      const map = {};
       await Promise.all(
         docs.map(async (doc) => {
           const slots = await getAvailableSlots(doc.id_usuario);
-          slotsMap[doc.id_usuario] = Array.isArray(slots) ? slots : [];
+          map[doc.id_usuario] = Array.isArray(slots) ? slots : [];
         })
       );
-      setSlotsByDoctor(slotsMap);
-      setAlert({
-        show: true,
-        message: `Se encontraron ${docs.length} médicos disponibles`,
-        type: "success",
-      });
+      setSlotsByDoctor(map);
+      setAlert({ show: true, message: `Se encontraron ${docs.length} médicos`, type: "success" });
     } catch (err) {
-      setAlert({
-        show: true,
-        message: err.message || "Error al buscar médicos",
-        type: "danger",
-      });
+      setAlert({ show: true, message: err.message || "Error buscando médicos", type: "danger" });
     } finally {
       setLoading(false);
     }
@@ -151,28 +147,19 @@ export default function DashboardScreen() {
     setShowModal(true);
   };
 
-  // Mostrar modal personalizado para confirmar cita
   const handleAppointment = () => {
     if (!fechaHora) {
-      setAlert({
-        show: true,
-        message: "Por favor selecciona fecha y hora",
-        type: "warning",
-      });
+      setAlert({ show: true, message: "Selecciona fecha y hora", type: "warning" });
       return;
     }
-
     setConfirmModal({
       show: true,
       title: "Confirmar cita médica",
-      body: `¿Estás seguro de que deseas agendar una cita con Dr(a). ${
-        selectedDoctor?.nombre
-      } para el ${new Date(fechaHora).toLocaleString()}?`,
+      body: `¿Agendar cita con Dr(a). ${selectedDoctor.nombre} el ${new Date(fechaHora).toLocaleString()}?`,
       onConfirm: confirmAppointment,
     });
   };
 
-  // Confirmar agendamiento de cita
   const confirmAppointment = async () => {
     setConfirmModal({ show: false, title: "", body: "", onConfirm: null });
     try {
@@ -183,52 +170,33 @@ export default function DashboardScreen() {
         metodo_notificacion: notiMethod,
         seguro_medico: selectedDoctor.PerfilMedico?.seguro_medico || "",
       });
-      setAlert({
-        show: true,
-        message:
-          "¡Cita agendada exitosamente! Recibirás una notificación de confirmación.",
-        type: "success",
-      });
       setShowModal(false);
-
-      // Actualizar slots disponibles para ese médico
-      const updatedSlots = await getAvailableSlots(selectedDoctor.id_usuario);
+      // actualizar slots
+      const updated = await getAvailableSlots(selectedDoctor.id_usuario);
       setSlotsByDoctor((prev) => ({
         ...prev,
-        [selectedDoctor.id_usuario]: Array.isArray(updatedSlots)
-          ? updatedSlots
-          : [],
+        [selectedDoctor.id_usuario]: Array.isArray(updated) ? updated : [],
       }));
+      setAlert({ show: true, message: "Cita agendada exitosamente", type: "success" });
     } catch (err) {
-      setAlert({
-        show: true,
-        message: err.message || "Error al agendar la cita. Intenta nuevamente.",
-        type: "danger",
-      });
+      setAlert({ show: true, message: err.message || "Error al agendar cita", type: "danger" });
     }
   };
 
-  // Manejar cancelación del modal de confirmación
   const handleConfirmModalCancel = () => {
     setConfirmModal({ show: false, title: "", body: "", onConfirm: null });
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ padding: 20 }}
-      >
+      <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
         <Text style={styles.header}>Buscar médicos y agendar cita</Text>
-
-        {/* Alertas personalizadas */}
         <CustomAlert
           show={alert.show}
           message={alert.message}
           variant={alert.type}
           onClose={() => setAlert({ show: false, message: "", type: "info" })}
         />
-
         {/* Filtros */}
         <View style={styles.filters}>
           <Picker
@@ -376,6 +344,7 @@ export default function DashboardScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f9fa" },
